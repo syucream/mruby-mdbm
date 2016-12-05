@@ -6,7 +6,9 @@
 
 #include "mdbm.h"
 
-#define E_MDBM_ERROR (mrb_class_get_under(mrb, mrb_class_get(mrb, "MDBM"), "MdbmHandlerError"))
+#define MDBM_CLASSNAME "MDBM"
+
+#define E_MDBM_ERROR (mrb_class_get_under(mrb, mrb_class_get(mrb, MDBM_CLASSNAME), "MdbmHandlerError"))
 
 static void
 _mdbm_close(mrb_state *mrb, void *p)
@@ -23,9 +25,9 @@ static mrb_value
 mrb_mdbm_open(mrb_state *mrb, mrb_value self)
 {
   char* filename;
-  mrb_int flags, mode, psize, presize;
+  mrb_int flags, mode, psize = 0, presize = 0;
 
-  mrb_get_args(mrb, "ziiii", &filename, &flags, &mode, &psize, &presize);
+  mrb_get_args(mrb, "zii|ii", &filename, &mode, &flags, &psize, &presize);
 
   MDBM *mdbm = mdbm_open(filename, flags, mode, psize, presize);
   if (!mdbm) {
@@ -67,8 +69,8 @@ static mrb_value
 mrb_mdbm_store(mrb_state *mrb, mrb_value self)
 {
   char *key, *value;
-  mrb_int mode;
-  mrb_get_args(mrb, "zzi", &key, &value, &mode);
+  mrb_int mode = MDBM_REPLACE;
+  mrb_get_args(mrb, "zz|i", &key, &value, &mode);
 
   MDBM *mdbm = (MDBM*)DATA_PTR(self);
   if (!mdbm) {
@@ -110,14 +112,16 @@ mrb_mruby_mdbm_gem_init(mrb_state* mrb)
 {
   struct RClass *rclass;
 
-  rclass = mrb_define_class(mrb, "MDBM", mrb->object_class);
+  rclass = mrb_define_class(mrb, MDBM_CLASSNAME, mrb->object_class);
 
-  mrb_define_method(mrb, rclass, "initialize", mrb_mdbm_open, MRB_ARGS_REQ(5));
+  mrb_define_method(mrb, rclass, "initialize", mrb_mdbm_open, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(2));
   mrb_define_method(mrb, rclass, "fetch", mrb_mdbm_fetch, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, rclass, "store", mrb_mdbm_store, MRB_ARGS_REQ(3));
+  mrb_define_method(mrb, rclass, "store", mrb_mdbm_store, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, rclass, "[]", mrb_mdbm_fetch, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, rclass, "[]=", mrb_mdbm_store, MRB_ARGS_REQ(2));
   mrb_define_method(mrb, rclass, "close", mrb_mdbm_close, MRB_ARGS_NONE());
 
-  // modes
+  // mdbm_open's modes
   mrb_define_const(mrb, rclass, "MDBM_O_RDONLY", mrb_fixnum_value(MDBM_O_RDONLY));
   mrb_define_const(mrb, rclass, "MDBM_O_RDWR", mrb_fixnum_value(MDBM_O_RDWR));
   mrb_define_const(mrb, rclass, "MDBM_O_WRONLY", mrb_fixnum_value(MDBM_O_WRONLY));
@@ -138,6 +142,7 @@ mrb_mruby_mdbm_gem_init(mrb_state* mrb)
   mrb_define_const(mrb, rclass, "MDBM_ANY_LOCKS", mrb_fixnum_value(MDBM_ANY_LOCKS));
   mrb_define_const(mrb, rclass, "MDBM_SINGLE_ARCH", mrb_fixnum_value(MDBM_SINGLE_ARCH));
 
+  // mdbm_store's flags
   mrb_define_const(mrb, rclass, "MDBM_INSERT", mrb_fixnum_value(MDBM_INSERT));
   mrb_define_const(mrb, rclass, "MDBM_REPLACE", mrb_fixnum_value(MDBM_REPLACE));
   mrb_define_const(mrb, rclass, "MDBM_INSERT_DUP", mrb_fixnum_value(MDBM_INSERT_DUP));
