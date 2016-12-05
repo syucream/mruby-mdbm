@@ -1,5 +1,7 @@
 # mruby-mdbm
 
+[![Build Status](https://travis-ci.org/syucream/mruby-mdbm.svg?branch=master)](https://travis-ci.org/syucream/mruby-mdbm)
+
 mruby binding of [yahoo/mdbm](https://github.com/yahoo/mdbm)
 
 # Quickstart
