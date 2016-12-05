@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all mdbm clean
 
 SOURCES = src/mruby_mdbm.c
 
@@ -24,10 +24,7 @@ libmruby_mdbm.a:
 	$(AR) -r libmruby_mdbm.a libmruby_mdbm.o
 
 mdbm:
-	cd $(MDBM_PREFIX)/src/lib/
-	make
-	ar -r libmdbm.a object/*.o
-	cd ../../../
+	cd $(MDBM_PREFIX)/src/lib/ && make && ar -r libmdbm.a object/*.o
 
 clean:
 	rm -f **/*.lo

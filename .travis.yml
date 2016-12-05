@@ -6,7 +6,6 @@ compiler:
   - clang
 before_install:
   - sudo apt-get -qq update
-  - pip install --user cpp-coveralls
 install:
   - sudo apt-get -qq install autoconf automake autotools-dev libtool pkg-config
   - sudo apt-get -qq install ruby
